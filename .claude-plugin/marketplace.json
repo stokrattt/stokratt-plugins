@@ -1,0 +1,13 @@
+{
+  "name": "stokratt-plugins",
+  "owner": {
+    "name": "stokrattt"
+  },
+  "plugins": [
+    {
+      "name": "korotko",
+      "source": "./plugins/korotko",
+      "description": "Output style for short, direct answers in English or Ukrainian."
+    }
+  ]
+}

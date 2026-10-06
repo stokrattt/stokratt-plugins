@@ -1,0 +1,7 @@
+{
+  "name": "korotko",
+  "version": "1.0.0",
+  "description": "Output style for short, direct answers in English or Ukrainian.",
+  "license": "MIT",
+  "outputStyles": "./output-styles/"
+}
