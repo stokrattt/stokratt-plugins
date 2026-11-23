@@ -217,7 +217,8 @@ Hooks and scripts hold these rules, so the model cannot skip them:
   description, the description over Figma, Figma over the wiki, and the wiki
   over current site behaviour. The comment says which source won.
 - The URL to test comes only from the issue's `Environment` field.
-- If the smoke case fails, the run stops and the comment says what was not run.
+- If the core of the feature does not work at all, the run stops and the comment
+  says what was not run. A wrong value is a bug, and the run goes on.
 - No new accounts are registered on production.
 - Before a bug is filed, Jira is searched for a duplicate.
 - The comment is written in the language of the ticket.

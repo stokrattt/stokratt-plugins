@@ -127,7 +127,8 @@ function main(argv) {
                 .join('\n') +
             '\nDo one of three: (1) try it now; (2) add a line `attempt: <command or tool> -> <verbatim result>`; ' +
             '(3) the axis is excluded by a decision: add `basis: <decision of the human or the orchestrator>`. ' +
-            'If the sentence is about the product, not a channel, say so in one line.',
+            'If the sentence is about the product, not a channel, say so in one line, then repeat your whole report and ' +
+            'draft verbatim: only your last message reaches the orchestrator.',
     );
     return 2;
 }
