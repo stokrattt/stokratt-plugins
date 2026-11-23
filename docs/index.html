@@ -16,6 +16,7 @@
  * axes: dark/grotesk-sans/warm · posture: committed · rim: night · contrast: pass · fold: pass · v2.0.0 */
 /* waive F1: the owner's style rule is straight ASCII quotes everywhere */
 /* waive 26b: the page has no control that can be disabled */
+/* waive 58: the owner asked for the cost and token figures on the page, about 100 words over */
 /* Hallmark · pre-emit critique: P4 H4 E4 S4 R3 V4 · weakest: R, no photographs exist for a CLI tool, so the theme's Range (wells, rows, a table, mono) carries every section */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -115,6 +116,16 @@ td:first-child { font-family: var(--font-outlier); font-size: var(--text-sm); co
 .after { margin-top: var(--space-xl); display: flex; flex-wrap: wrap; gap: var(--space-lg); align-items: center; font-size: var(--text-sm); }
 .after code { color: var(--color-ink); }
 
+/* cost */
+.figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 var(--space-2xl); }
+.figs div { display: flex; flex-direction: column-reverse; justify-content: flex-end; padding: var(--space-lg) var(--space-lg) var(--space-lg) 0; border-left: var(--rule-hair) solid var(--color-rule); padding-left: var(--space-lg); }
+.figs div:first-child { border-left: 0; padding-left: 0; }
+.figs dd { margin: 0; font-family: var(--font-outlier); font-variant-numeric: tabular-nums; font-size: var(--text-display-s); line-height: 1; letter-spacing: -0.03em; color: var(--color-ink); }
+.figs dd span { font-size: 0.5em; color: var(--color-muted); letter-spacing: 0; }
+.figs dt { margin-top: var(--space-sm); font-size: var(--text-sm); color: var(--color-muted); }
+td.num { font-family: var(--font-outlier); font-variant-numeric: tabular-nums; }
+.note { margin-top: var(--space-xl); max-width: 70ch; }
+
 /* needs */
 .needs { margin: 0; }
 .needs div { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap-columns); padding-block: var(--space-lg); border-top: var(--rule-hair) solid var(--color-rule-2); }
@@ -147,6 +158,8 @@ footer a { color: var(--color-ink-2); }
   thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   tr { display: grid; gap: var(--space-2xs); padding-block: var(--space-md); border-bottom: var(--rule-hair) solid var(--color-rule-2); }
   td { display: block; padding: 0; border: 0; }
+  .figs { grid-template-columns: minmax(0, 1fr); }
+  .figs div { border-left: 0; padding-left: 0; border-top: var(--rule-hair) solid var(--color-rule); }
   .install { flex-direction: column; width: 100%; }
   .install code { white-space: normal; overflow-wrap: anywhere; }
 }
@@ -162,6 +175,7 @@ footer a { color: var(--color-ink-2); }
     <nav aria-label="Sections">
       <ul>
         <li><a href="#run">qa-orchestrator</a></li>
+        <li><a href="#cost">Cost</a></li>
         <li><a href="#korotko">korotko</a></li>
         <li><a href="https://github.com/stokrattt/stokratt-plugins">Source on GitHub</a></li>
       </ul>
@@ -283,6 +297,33 @@ For a QA request launch the qa-orchestrator agent.</pre>
         </div>
         <p class="after"><code>claude plugin install korotko@stokratt-plugins</code> then pick it in <code>/output-style</code>.</p>
       </div>
+    </div>
+  </section>
+
+  <section id="cost" aria-labelledby="cost-h">
+    <div class="container">
+      <div class="grid head">
+        <h2 id="cost-h">What a run costs</h2>
+        <p class="lead">Averages from five test runs on sample tickets.</p>
+      </div>
+      <dl class="figs">
+        <div><dt>per ticket, start to posted comment</dt><dd>7.5<span> min</span></dd></div>
+        <div><dt>tokens, about 92% read from cache</dt><dd>4.5<span> M</span></dd></div>
+        <div><dt>at API prices, subagents included</dt><dd>$2.42</dd></div>
+      </dl>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Skill</th><th scope="col">Time</th><th scope="col">Tokens</th><th scope="col">API price</th></tr></thead>
+          <tbody>
+            <tr><td>qa-pipeline</td><td class="num">10 min</td><td class="num">4.8 M</td><td class="num">$2.93</td></tr>
+            <tr><td>jira-qa-cli</td><td class="num">9 min</td><td class="num">5.3 M</td><td class="num">$2.68</td></tr>
+            <tr><td>jira-qa-retest-cli</td><td class="num">8 min</td><td class="num">6.2 M</td><td class="num">$2.72</td></tr>
+            <tr><td>jira-qa-parallel-cli</td><td class="num">7 min</td><td class="num">4.2 M</td><td class="num">$2.45</td></tr>
+            <tr><td>qa-design-check</td><td class="num">3 min</td><td class="num">1.8 M</td><td class="num">$1.33</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">On a Claude subscription a run is not billed: it counts toward your plan's usage limits. The tickets had four or five acceptance criteria; a bigger ticket takes longer.</p>
     </div>
   </section>
 
