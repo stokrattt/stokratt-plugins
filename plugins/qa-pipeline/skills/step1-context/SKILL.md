@@ -37,7 +37,7 @@ can report real minutes instead of a guess.
 
 Per `references/field-maps.md`: resolve the `cloudId` and the custom field ids by name, then call `getJiraIssue` with `fields: ["*all"]`, `responseContentFormat: "markdown"`.
 
-Extract: `summary`, `description` (Steps to Reproduce / Expected Result / AC), and the fields the field map lists by name: Environment (URL), Expected result, Platform, Component, plus the user-picker fields the project's Bug create screen requires (for example a tech lead or a coordinator). Also `comment.comments` and `attachment`. Scan description + comments for Figma links, test accounts, AC, and Steps to Reproduce (see field-map conventions).
+Extract: `summary`, `description` (Steps to Reproduce / Expected Result / AC), and the fields the field map lists by name: Environment (URL), Expected result, Platform, Component, plus the user-picker fields the project's Bug create screen requires (for example an approver). Also `comment.comments` and `attachment`. Scan description + comments for Figma links, test accounts, AC, and Steps to Reproduce (see field-map conventions).
 
 **Linked Jira context:** if linked issues are needed to understand this one, fetch them, but record them ONLY under "Linked Jira context" (they are NOT requirements of this task).
 

@@ -50,7 +50,7 @@ Use issue type `Bug` in the project of the issue under test. Read its create met
 | `summary`                | title       | `[<module or component>] <what is broken>` |
 | required user pickers    | people      | **copy from the issue under test**         |
 
-A required multi-user picker (for example a tech lead or a coordinator) cannot be derived from the
+A required multi-user picker (for example an approver) cannot be derived from the
 failure. Copy it from the issue being tested: `step1-context` already reads it with
 `fields=["*all"]`, so the values are in `context.md`. **Empty on the parent issue means no bug is
 created:** report it and let the human file that one. Never substitute yourself, the reporter, or a
