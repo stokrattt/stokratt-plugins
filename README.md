@@ -195,6 +195,55 @@ you                    approve the comment and the bugs, then they are posted
 | `jira-qa-retest-cli` | a fix is on another environment | the saved plan from `tested_tasks/<KEY>.md` replayed on the new URL, a retest comment |
 | `qa-design-check` | the ticket links a Figma frame | colours, fonts, spacing, radii, text and repeated elements compared with the page, an HTML report and a comment |
 
+### Inside a qa-pipeline run
+
+The orchestrator asks everything up front, in one or two question blocks:
+
+| Question | Options |
+| --- | --- |
+| Which skill should run? | `qa-pipeline`, `jira-qa-cli`, `jira-qa-parallel-cli`, `jira-qa-retest-cli` |
+| Platforms? | desktop, mobile and tablet; desktop only; mobile only |
+| Add qa-design-check? | no, yes (then: Figma MCP or a Figma token) |
+| Which URL should be tested? | the ticket's `Environment` field, or one you type |
+| Test case coverage level? | standard, extended (pipeline only) |
+| Read the code from the MR? | no, yes (pipeline only, needs `glab`) |
+
+After that it asks nothing until the draft. Two exceptions: the MR code cannot
+be reached, or a retest needs a new account.
+
+```
+label ai-qa-tested on the ticket              (label-first-gate)
+ |
+ v
+step 1  context.md        everything from the ticket          -> reviewer gate
+step 1b code-map.md       only if you said yes to the MR code
+step 2  requirements.md   numbered, testable, open questions  -> reviewer gate
+step 3  checklist.md      one pass or fail per item           -> reviewer gate
+step 4  test-cases.md     steps and expected results          -> reviewer gate
+ |                        (check-pipeline-coverage.mjs: every requirement
+ |                         has an item, every item has a case)
+ v
+step 5  browser run       smoke case first, then desktop, mobile, tablet
+ |                        a broken core stops the run, a wrong value is a bug
+ v
+evidence audit            every passed line needs proof in the run log
+ |
+ v
+duplicate search          one Jira search per bug
+ |
+ v
+you approve               the comment, and each bug: file it or not
+ |
+ v
+bugs filed, comment posted                    (qa-draft-gate)
+```
+
+Every step runs in a fresh `qa-skill-runner`, and every file goes through
+`qa-artifact-reviewer`. The reviewer answers PASS or a numbered list of gaps.
+The runner fixes the list; after two failed tries the run stops and shows you
+the list. The files stay in `qa-pipeline/<KEY>/`, the run log in
+`tested_tasks/<KEY>.md`.
+
 ### What is enforced by code
 
 Hooks and scripts hold these rules, so the model cannot skip them:
