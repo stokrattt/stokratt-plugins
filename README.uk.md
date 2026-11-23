@@ -4,12 +4,18 @@
 
 [English](README.md) · **Українська**
 
-Плагіни для Claude Code:
+Плагіни для Claude Code.
 
-- [`korotko`](#korotko), output style для коротких відповідей.
-- [`qa-orchestrator`](plugins/qa-orchestrator/README.uk.md), QA Jira-задач агентами, разом зі скіл-плагінами
-  [`qa-pipeline`](plugins/qa-pipeline/README.uk.md), [`jira-qa`](plugins/jira-qa/README.uk.md) і
-  [`qa-design-check`](plugins/qa-design-check/README.uk.md).
+| Плагін | Що це |
+| --- | --- |
+| [`korotko`](#korotko) | Output style для коротких прямих відповідей. |
+| [`qa-orchestrator`](#qa-orchestrator) | QA Jira-задач командою агентів, разом зі скіл-плагінами `qa-pipeline`, `jira-qa` і `qa-design-check`. |
+
+Спершу один раз додай маркетплейс:
+
+```bash
+claude plugin marketplace add stokrattt/stokratt-plugins
+```
 
 ## korotko
 
@@ -109,7 +115,7 @@ Output style, з яким Claude відповідає як зайнятий ко
 `keep-coding-instructions: true`: Claude Code лишає свої інструкції для роботи
 з кодом, а змінюється тільки манера відповіді.
 
-## Встановлення
+### Встановлення
 
 ```bash
 claude plugin marketplace add stokrattt/stokratt-plugins
@@ -130,7 +136,7 @@ claude plugin install korotko@stokratt-plugins
 | Видалити | `claude plugin uninstall korotko@stokratt-plugins` |
 | Спробувати без встановлення | `claude --plugin-dir ./plugins/korotko --settings '{"outputStyle":"korotko:korotko"}'` |
 
-## Під себе
+### Під себе
 
 Усі правила лежать в одному файлі:
 [`plugins/korotko/output-styles/korotko.md`](plugins/korotko/output-styles/korotko.md).
@@ -142,6 +148,94 @@ python3 -m unittest discover tests
 
 Тести перевіряють маніфести і frontmatter стилю. Ще вони стежать, щоб у
 файлах не було довгих тире, кривих лапок, особистих шляхів і email.
+
+## qa-orchestrator
+
+QA Jira-задач командою агентів. Ти пишеш "run QA on PROJ-123". Оркестратор
+читає тікет, один раз ставить кілька питань, тестує фічу в справжньому
+браузері через свіжих субагентів і показує чернетку коментаря та багів. У Jira
+нічого не пишеться, поки ти не скажеш "так".
+
+```bash
+claude plugin install qa-orchestrator@stokratt-plugins
+```
+
+Разом із ним ставляться `qa-pipeline`, `jira-qa` і `qa-design-check`.
+
+### Як виглядає прогін
+
+```
+ти: "run QA on PROJ-123"
+ |
+ v
+qa-orchestrator        читає задачу, питає один раз: скіл, платформи, URL, покриття
+ |                     ставить на задачу лейбл ai-qa-tested
+ v
+qa-skill-runner        виконує один скіл або один крок пайплайна в чистому контексті,
+ |                     веде браузер, повертає чернетку, у Jira не пише
+ v
+qa-artifact-reviewer   перевіряє кожен артефакт пайплайна: PASS або список прогалин
+ |
+ v
+аудит доказів          кожна пройдена перевірка в чернетці має доказ з логу прогону
+ |
+ v
+ти                     погоджуєш коментар і баги, і тоді вони постяться
+```
+
+### Що він уміє запускати
+
+| Скіл | Коли брати | Що отримаєш |
+| --- | --- | --- |
+| `qa-pipeline` | у тікеті кілька критеріїв приймання і потрібна тестова документація | контекст, вимоги, чеклист і тест-кейси в `qa-pipeline/<KEY>/`, кожен перевірений, потім прогін у браузері й коментар |
+| `jira-qa-cli` | один тікет, пряма перевірка | прогін на desktop, mobile і tablet з доказом на кожну перевірку, коментар і чернетки багів |
+| `jira-qa-parallel-cli` | кілька тікетів одразу | окремий субагент і окрема сесія браузера на тікет, по чернетці на кожен |
+| `jira-qa-retest-cli` | фікс уже на іншому середовищі | збережений план з `tested_tasks/<KEY>.md` повторюється на новому URL, коментар ретесту |
+| `qa-design-check` | у тікеті є посилання на Figma | кольори, шрифти, відступи, радіуси, текст і повторювані елементи звіряються зі сторінкою, HTML-звіт і коментар |
+
+### Що тримає код
+
+Ці правила тримають хуки і скрипти, модель не може їх обійти:
+
+| Перевірка | Правило |
+| --- | --- |
+| `label-first-gate` | раннер не стартує, поки на задачі нема QA-лейбла |
+| `qa-jira-write-gate` | раннер і рев'ювер не пишуть у Jira |
+| `qa-draft-gate` | коментар, футер `ai-qa-meta` якого не збігається з текстом, не постується |
+| `qa-skill-gate` | QA-скіли запускаються тільки всередині `qa-skill-runner` |
+| `playwright-mcp-gate` | субагенти працюють через `playwright-cli`, не через Playwright MCP |
+| `blocked-claim-gate` | раннер не може написати "заблоковано", не показавши, що пробував |
+| `orchestrator-stop-gate` | оркестратор не зупиняється посеред маршруту без питання чи підсумку |
+| `check-pipeline-coverage.mjs` | кожна вимога має пункт чеклиста, кожен пункт має тест-кейс |
+| `check-qa-draft.mjs` | лічильники й футер чернетки збігаються з її текстом |
+
+### Правила, яких тримаються агенти
+
+- Коли джерела розходяться, останній коментар репортера важить більше за опис,
+  опис більше за Figma, Figma більше за вікі, а вікі більше за поточну
+  поведінку сайту. У коментарі сказано, яке джерело перемогло.
+- URL для тесту береться тільки з поля задачі `Environment`.
+- Якщо падає smoke-кейс, прогін зупиняється, і коментар каже, що не прогнано.
+- На production нові акаунти не реєструються.
+- Перед створенням бага агент шукає в Jira дублікат.
+- Коментар пишеться мовою тікета.
+
+### Що потрібно
+
+- Claude Code.
+- Atlassian (Jira) MCP-сервер.
+- [`playwright-cli`](https://www.npmjs.com/package/@playwright/cli) і Node.js.
+- Для `qa-design-check`: Figma MCP-сервер або персональний токен Figma.
+- Опційно, щоб читати код merge request у `qa-pipeline`: `glab`.
+
+У проєкті Jira має бути поле `Environment` з URL для тесту. `Platform`,
+`Component` і `Expected result` беруться, якщо вони є. Поля шукаються за
+назвою, ID полів налаштовувати не треба. Лейбл `ai-qa-tested`; інший задається
+змінною середовища `AI_QA_LABEL`.
+
+Деталі: [qa-orchestrator](plugins/qa-orchestrator/README.uk.md),
+[qa-pipeline](plugins/qa-pipeline/README.uk.md), [jira-qa](plugins/jira-qa/README.uk.md),
+[qa-design-check](plugins/qa-design-check/README.uk.md).
 
 ## Структура
 
@@ -157,19 +251,6 @@ plugins/qa-design-check/            звірка Figma з живою сторі�
 tests/test_plugins.py               статичні перевірки
 AGENTS.md                           інструкції для агентів
 ```
-
-## qa-orchestrator
-
-Проводить QA Jira-задач агентами. Питає, який скіл запустити, віддає кожен
-крок свіжому агенту-раннеру, перевіряє кожен артефакт агентом-рев'ювером і
-зупиняється на твоє підтвердження, перш ніж щось постити в Jira. Разом із ним
-ставляться `qa-pipeline`, `jira-qa` і `qa-design-check`.
-
-```bash
-claude plugin install qa-orchestrator@stokratt-plugins
-```
-
-Деталі й вимоги: [plugins/qa-orchestrator/README.uk.md](plugins/qa-orchestrator/README.uk.md).
 
 ## Ліцензія
 

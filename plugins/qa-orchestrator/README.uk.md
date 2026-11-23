@@ -43,7 +43,9 @@ claude plugin install qa-orchestrator@stokratt-plugins
 - `qa-jira-write-gate`: раннер і рев'юер не пишуть у Jira;
 - `qa-draft-gate`: QA-коментар, футер `ai-qa-meta` якого не збігається з текстом, не постується;
 - `blocked-claim-gate`: раннер не закінчує хід фразою "браузер недоступний" без рядка `attempt:`;
-- `orchestrator-stop-gate`: оркестратор не зупиняється посеред маршруту без питання чи підсумку.
+- `orchestrator-stop-gate`: оркестратор не зупиняється посеред маршруту без питання чи підсумку;
+- `qa-skill-gate`: QA-скіли запускаються тільки всередині `qa-skill-runner`;
+- `playwright-mcp-gate`: субагенти ведуть браузер через `playwright-cli`, не через Playwright MCP.
 
 ## Налаштування
 

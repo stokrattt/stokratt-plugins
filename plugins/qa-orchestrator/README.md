@@ -43,7 +43,9 @@ Hooks:
 - `qa-jira-write-gate`: the runner and the reviewer never write to Jira;
 - `qa-draft-gate`: a QA comment whose `ai-qa-meta` footer disagrees with its text is not posted;
 - `blocked-claim-gate`: the runner cannot end its turn with "the browser is unavailable" without an `attempt:` line;
-- `orchestrator-stop-gate`: the orchestrator does not stop mid-route without a question or a summary.
+- `orchestrator-stop-gate`: the orchestrator does not stop mid-route without a question or a summary;
+- `qa-skill-gate`: the QA skills run only inside `qa-skill-runner`;
+- `playwright-mcp-gate`: subagents drive the browser with `playwright-cli`, never the Playwright MCP.
 
 ## Configuration
 

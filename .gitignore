@@ -1,2 +1,11 @@
 __pycache__/
 .DS_Store
+
+# local tool output
+.playwright-cli/
+.playwright-mcp/
+.hallmark/
+node_modules/
+*.log
+.env
+.env.*

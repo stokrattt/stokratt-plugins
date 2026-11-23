@@ -4,12 +4,18 @@
 
 **English** · [Українська](README.uk.md)
 
-Claude Code plugins:
+Claude Code plugins.
 
-- [`korotko`](#korotko), an output style for short, direct answers ("korotko" is Ukrainian for "briefly").
-- [`qa-orchestrator`](plugins/qa-orchestrator/README.md), agent-driven QA of Jira issues, with its skill plugins
-  [`qa-pipeline`](plugins/qa-pipeline/README.md), [`jira-qa`](plugins/jira-qa/README.md) and
-  [`qa-design-check`](plugins/qa-design-check/README.md).
+| Plugin | What it is |
+| --- | --- |
+| [`korotko`](#korotko) | An output style for short, direct answers. "korotko" is Ukrainian for "briefly". |
+| [`qa-orchestrator`](#qa-orchestrator) | QA of Jira issues by a team of agents, with the skill plugins `qa-pipeline`, `jira-qa` and `qa-design-check`. |
+
+Add the marketplace once:
+
+```bash
+claude plugin marketplace add stokrattt/stokratt-plugins
+```
 
 ## korotko
 
@@ -111,7 +117,7 @@ first message to the last. `korotko` sets `keep-coding-instructions: true`, so
 Claude Code keeps its own coding instructions and only the way it talks
 changes.
 
-## Install
+### Install
 
 ```bash
 claude plugin marketplace add stokrattt/stokratt-plugins
@@ -132,7 +138,7 @@ in a settings file instead:
 | Remove | `claude plugin uninstall korotko@stokratt-plugins` |
 | Try without installing | `claude --plugin-dir ./plugins/korotko --settings '{"outputStyle":"korotko:korotko"}'` |
 
-## Make it yours
+### Make it yours
 
 All the rules live in one file:
 [`plugins/korotko/output-styles/korotko.md`](plugins/korotko/output-styles/korotko.md).
@@ -144,6 +150,94 @@ python3 -m unittest discover tests
 
 The tests check the manifests, the style frontmatter, and that no file carries
 em dashes, curly quotes, personal paths or emails.
+
+## qa-orchestrator
+
+QA for Jira issues, run by a team of agents. You say "run QA on PROJ-123". The
+orchestrator reads the ticket, asks you a few questions once, tests the feature
+in a real browser through fresh subagents, and shows you the Jira comment and
+the bug drafts. Nothing is written to Jira until you say yes.
+
+```bash
+claude plugin install qa-orchestrator@stokratt-plugins
+```
+
+Installing it also installs `qa-pipeline`, `jira-qa` and `qa-design-check`.
+
+### What a run looks like
+
+```
+you: "run QA on PROJ-123"
+ |
+ v
+qa-orchestrator        reads the issue, asks once: skill, platforms, URL, coverage
+ |                     puts the ai-qa-tested label on the issue
+ v
+qa-skill-runner        runs one skill or one pipeline step in a clean context,
+ |                     drives the browser, returns a draft, never writes to Jira
+ v
+qa-artifact-reviewer   checks each pipeline artifact: PASS or a list of gaps
+ |
+ v
+evidence audit         every passed check in the draft needs proof from the run log
+ |
+ v
+you                    approve the comment and the bugs, then they are posted
+```
+
+### What it can run
+
+| Skill | Pick it when | What you get |
+| --- | --- | --- |
+| `qa-pipeline` | the ticket has several acceptance criteria and you want test documentation | context, requirements, checklist and test cases in `qa-pipeline/<KEY>/`, each reviewed, then a browser run and a comment |
+| `jira-qa-cli` | one ticket, a direct check | desktop, mobile and tablet runs with evidence per check, a comment and bug drafts |
+| `jira-qa-parallel-cli` | several tickets at once | one subagent and one browser session per ticket, one draft each |
+| `jira-qa-retest-cli` | a fix is on another environment | the saved plan from `tested_tasks/<KEY>.md` replayed on the new URL, a retest comment |
+| `qa-design-check` | the ticket links a Figma frame | colours, fonts, spacing, radii, text and repeated elements compared with the page, an HTML report and a comment |
+
+### What is enforced by code
+
+Hooks and scripts hold these rules, so the model cannot skip them:
+
+| Guard | Rule |
+| --- | --- |
+| `label-first-gate` | no runner starts before the issue has the QA label |
+| `qa-jira-write-gate` | the runner and the reviewer never write to Jira |
+| `qa-draft-gate` | a comment whose `ai-qa-meta` footer disagrees with its text is not posted |
+| `qa-skill-gate` | the QA skills run only inside `qa-skill-runner` |
+| `playwright-mcp-gate` | subagents use `playwright-cli`, never the Playwright MCP |
+| `blocked-claim-gate` | a runner cannot report "blocked" without showing what it tried |
+| `orchestrator-stop-gate` | the orchestrator does not stop mid-route without a question or a summary |
+| `check-pipeline-coverage.mjs` | every requirement has a checklist item, every item has a test case |
+| `check-qa-draft.mjs` | the draft's counters and footer match its text |
+
+### Rules the agents follow
+
+- When sources disagree, the latest comment by the reporter wins over the
+  description, the description over Figma, Figma over the wiki, and the wiki
+  over current site behaviour. The comment says which source won.
+- The URL to test comes only from the issue's `Environment` field.
+- If the smoke case fails, the run stops and the comment says what was not run.
+- No new accounts are registered on production.
+- Before a bug is filed, Jira is searched for a duplicate.
+- The comment is written in the language of the ticket.
+
+### Requirements
+
+- Claude Code.
+- An Atlassian (Jira) MCP server.
+- [`playwright-cli`](https://www.npmjs.com/package/@playwright/cli) and Node.js.
+- For `qa-design-check`: a Figma MCP server or a Figma personal access token.
+- Optional, to read the merge request code in `qa-pipeline`: `glab`.
+
+Your Jira project needs an `Environment` field with the URL to test. `Platform`,
+`Component` and `Expected result` are used when they exist. Fields are found by
+name, so no field IDs need to be configured. The label is `ai-qa-tested`; set
+the `AI_QA_LABEL` environment variable to use another one.
+
+More detail: [qa-orchestrator](plugins/qa-orchestrator/README.md),
+[qa-pipeline](plugins/qa-pipeline/README.md), [jira-qa](plugins/jira-qa/README.md),
+[qa-design-check](plugins/qa-design-check/README.md).
 
 ## Layout
 
@@ -159,19 +253,6 @@ plugins/qa-design-check/            Figma vs live page check
 tests/test_plugins.py               static checks
 AGENTS.md                           instructions for coding agents
 ```
-
-## qa-orchestrator
-
-Runs QA on Jira issues with agents. It asks which skill to use, hands every step
-to a fresh runner agent, checks each artifact with a reviewer agent, and stops
-for your approval before it posts anything to Jira. Installing it also installs
-`qa-pipeline`, `jira-qa` and `qa-design-check`.
-
-```bash
-claude plugin install qa-orchestrator@stokratt-plugins
-```
-
-Details and requirements: [plugins/qa-orchestrator/README.md](plugins/qa-orchestrator/README.md).
 
 ## License
 
