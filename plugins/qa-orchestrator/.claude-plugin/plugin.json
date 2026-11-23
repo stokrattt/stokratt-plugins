@@ -1,0 +1,23 @@
+{
+  "name": "qa-orchestrator",
+  "description": "QA for one or more Jira issues through agents: qa-orchestrator asks which skill to run (qa-pipeline, jira-qa-cli, jira-qa-parallel-cli, jira-qa-retest-cli, plus qa-design-check), applies the ai-qa-tested label (configurable) and hands each step to a fresh qa-skill-runner; qa-artifact-reviewer checks the qa-pipeline gates. Hooks enforce the rules: the label before the runner, the runner never writes to Jira, a comment whose footer disagrees with its text is not posted. Installs jira-qa, qa-pipeline and qa-design-check as dependencies. Needs only node.",
+  "version": "1.1.1",
+  "author": {
+    "name": "stokrattt"
+  },
+  "keywords": [
+    "jira",
+    "qa",
+    "orchestrator",
+    "agents",
+    "hooks",
+    "playwright",
+    "figma"
+  ],
+  "license": "MIT",
+  "dependencies": [
+    "jira-qa",
+    "qa-pipeline",
+    "qa-design-check"
+  ]
+}

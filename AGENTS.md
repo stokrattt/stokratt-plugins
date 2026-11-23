@@ -12,6 +12,15 @@ claude plugin install korotko@stokratt-plugins
 
 Then run `/output-style` in Claude Code and pick `korotko:korotko`.
 
+The QA plugins install the same way: `claude plugin install qa-orchestrator@stokratt-plugins`
+pulls in `qa-pipeline`, `jira-qa` and `qa-design-check`.
+
+## Neutrality
+
+The QA plugins must stay company- and domain-neutral: no company or product names, real
+ticket keys, Jira custom field IDs, hostnames or industry-specific examples. Examples use a
+generic web shop and `PROJ-123` keys.
+
 ## Check a change
 
 ```bash

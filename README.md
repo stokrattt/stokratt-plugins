@@ -4,7 +4,12 @@
 
 **English** · [Українська](README.uk.md)
 
-Claude Code plugins. The first one is `korotko`, Ukrainian for "briefly".
+Claude Code plugins:
+
+- [`korotko`](#korotko), an output style for short, direct answers ("korotko" is Ukrainian for "briefly").
+- [`qa-orchestrator`](plugins/qa-orchestrator/README.md), agent-driven QA of Jira issues, with its skill plugins
+  [`qa-pipeline`](plugins/qa-pipeline/README.md), [`jira-qa`](plugins/jira-qa/README.md) and
+  [`qa-design-check`](plugins/qa-design-check/README.md).
 
 ## korotko
 
@@ -147,9 +152,26 @@ em dashes, curly quotes, personal paths or emails.
 plugins/korotko/
   .claude-plugin/plugin.json        plugin manifest
   output-styles/korotko.md          the rules
+plugins/qa-orchestrator/            QA agents and hooks
+plugins/qa-pipeline/                step-by-step QA skills
+plugins/jira-qa/                    Jira QA skills
+plugins/qa-design-check/            Figma vs live page check
 tests/test_plugins.py               static checks
 AGENTS.md                           instructions for coding agents
 ```
+
+## qa-orchestrator
+
+Runs QA on Jira issues with agents. It asks which skill to use, hands every step
+to a fresh runner agent, checks each artifact with a reviewer agent, and stops
+for your approval before it posts anything to Jira. Installing it also installs
+`qa-pipeline`, `jira-qa` and `qa-design-check`.
+
+```bash
+claude plugin install qa-orchestrator@stokratt-plugins
+```
+
+Details and requirements: [plugins/qa-orchestrator/README.md](plugins/qa-orchestrator/README.md).
 
 ## License
 

@@ -8,6 +8,26 @@
       "name": "korotko",
       "source": "./plugins/korotko",
       "description": "Output style for short, direct answers in English or Ukrainian."
+    },
+    {
+      "name": "qa-orchestrator",
+      "source": "./plugins/qa-orchestrator",
+      "description": "Agent-driven QA of Jira issues: picks a QA skill, hands each step to a fresh runner, gates the result before anything is posted."
+    },
+    {
+      "name": "qa-pipeline",
+      "source": "./plugins/qa-pipeline",
+      "description": "Step-by-step QA pipeline: Jira issue to context, requirements, checklist, test cases and a browser run."
+    },
+    {
+      "name": "jira-qa",
+      "source": "./plugins/jira-qa",
+      "description": "QA testing of Jira issues in a real browser, single, parallel or retest on another environment."
+    },
+    {
+      "name": "qa-design-check",
+      "source": "./plugins/qa-design-check",
+      "description": "Compares a Figma frame with a live page and reports every concrete mismatch."
     }
   ]
 }

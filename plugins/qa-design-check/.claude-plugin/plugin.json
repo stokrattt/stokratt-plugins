@@ -1,0 +1,10 @@
+{
+  "name": "qa-design-check",
+  "description": "Compares a Figma frame with a live page and reports every concrete mismatch: colours, fonts, spacing, radii, geometry, extra elements, differing copy, and repeated elements that disagree with each other. Needs node, playwright-cli, and either the Figma MCP or a Figma personal access token.",
+  "version": "1.0.1",
+  "author": {
+    "name": "stokrattt"
+  },
+  "keywords": ["figma", "design", "qa", "pixel-perfect", "playwright"],
+  "license": "MIT"
+}

@@ -4,7 +4,12 @@
 
 [English](README.md) · **Українська**
 
-Плагіни для Claude Code. Перший з них `korotko`.
+Плагіни для Claude Code:
+
+- [`korotko`](#korotko), output style для коротких відповідей.
+- [`qa-orchestrator`](plugins/qa-orchestrator/README.uk.md), QA Jira-задач агентами, разом зі скіл-плагінами
+  [`qa-pipeline`](plugins/qa-pipeline/README.uk.md), [`jira-qa`](plugins/jira-qa/README.uk.md) і
+  [`qa-design-check`](plugins/qa-design-check/README.uk.md).
 
 ## korotko
 
@@ -145,9 +150,26 @@ python3 -m unittest discover tests
 plugins/korotko/
   .claude-plugin/plugin.json        маніфест плагіна
   output-styles/korotko.md          правила
+plugins/qa-orchestrator/            QA-агенти і хуки
+plugins/qa-pipeline/                покрокові QA-скіли
+plugins/jira-qa/                    скіли QA для Jira
+plugins/qa-design-check/            звірка Figma з живою сторінкою
 tests/test_plugins.py               статичні перевірки
 AGENTS.md                           інструкції для агентів
 ```
+
+## qa-orchestrator
+
+Проводить QA Jira-задач агентами. Питає, який скіл запустити, віддає кожен
+крок свіжому агенту-раннеру, перевіряє кожен артефакт агентом-рев'ювером і
+зупиняється на твоє підтвердження, перш ніж щось постити в Jira. Разом із ним
+ставляться `qa-pipeline`, `jira-qa` і `qa-design-check`.
+
+```bash
+claude plugin install qa-orchestrator@stokratt-plugins
+```
+
+Деталі й вимоги: [plugins/qa-orchestrator/README.uk.md](plugins/qa-orchestrator/README.uk.md).
 
 ## Ліцензія
 
