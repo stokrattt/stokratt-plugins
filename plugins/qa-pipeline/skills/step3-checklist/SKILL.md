@@ -48,7 +48,7 @@ requirement disappears silently.
 3. **BVA (boundary value analysis)**: for any limit/number. Example: "max 10" -> checks at 9, 10, 11.
 4. **EP (equivalence partitioning)**: valid vs invalid input classes.
 5. **State transitions**: empty state, full state, after-action states.
-6. **Validations**: required fields, formats, inline error messages.
+6. **Validations**: required fields, formats, inline error messages. Each message gets two items: it appears on the invalid value, and it clears once a valid value is entered the same way.
 7. **Interaction with other modules/systems**: adjacent functionality, shared state, dependent flows the change touches.
 8. **Cross-platform / browsers**: generate CP items ONLY for platforms in the resolved scope (read `Platform` from requirements.md). Desktop-only -> no Mobile CP item; Mobile-only -> no Desktop CP item; both -> both.
 9. **Specific requirements, MUST be covered if present:** localization, integrations, special scenarios explicitly mentioned.

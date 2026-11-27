@@ -1,7 +1,7 @@
 {
   "name": "jira-qa",
   "description": "QA testing of Jira issues waiting for QA: runs the issue's scenarios in a real browser (Playwright MCP or playwright-cli), tests several issues in parallel or retests one on another environment, and posts the result as a Jira comment after your approval. Adds an ai-qa-tested label and an ai-qa-meta footer with measured session time.",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "author": {
     "name": "stokrattt"
   },

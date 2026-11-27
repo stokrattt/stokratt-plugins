@@ -24,7 +24,7 @@ moment of the check, not reconstructed later. Its `<id>` is the platform letter 
 lowercase: `d-main-1`, `m-bugrepro`, `t-layout`, `d-tc-req-1-1`, `x1920-main-1`.
 
 - **Behaviour, text, state, network:** `$EV/<id>.txt`, written by the same command that ran the
-  check (`| tee $EV/<id>.txt` or `>`), at most 40 lines:
+  check: `qa-check.mjs` writes it (`| tee` or `>` only where the script cannot run the check), never a separate `Write`, at most 40 lines:
 
     ```
     EXPECTED: <one line, from the test plan or the TC>
@@ -77,7 +77,9 @@ Draft:
       network response: a toast proves nothing about state;
     - `EXPECTED` is a value the action changed (a cart total, a status, a counter, a list), and the output
       reads it only right after the action, with no state after a reload and no network response: the
-      page can draw the new value before the server agrees;
+      page can draw the new value before the server agrees. Page state (a button, a field, a message)
+      after an action that sent no request (`requests sent by the action: (none)`) is not this case:
+      the server holds nothing to agree with;
     - `VIEWPORT` differs from the platform in the line;
     - the screenshot does not show what `EXPECTED` names.
 

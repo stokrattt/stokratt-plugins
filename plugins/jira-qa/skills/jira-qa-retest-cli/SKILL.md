@@ -25,13 +25,14 @@ All rules from `jira-qa-cli` apply verbatim (read its TOKEN RULES section before
 - `--raw` on every command (`goto`, `click`, `fill`, `type`, `press`, `resize`, `mousewheel`, `reload`, `hover`, `check`, `uncheck`, `select`).
 - Snapshots: `--raw snapshot --depth=3 > .playwright-cli/snap.yml && grep -i "keyword" .playwright-cli/snap.yml | head -5`.
 - CSS/role selectors before snapshot cycles.
+- Every check runs through `qa-check.mjs`, one call per check (usage in `jira-qa-cli` TOKEN RULES).
 - `eval --raw` only for read-only data extraction, never for interactions.
 - Never load `mcp__playwright__*` tools.
 - Session: `qa-retest-<lowercase-issue-key>` (distinct from `qa-<key>` to avoid clashing with a parallel jira-qa-cli run).
 - Never use `kill-all`: only `playwright-cli -s=<SESSION_NAME> close 2>/dev/null`.
 - **Mobile/Tablet resize → reload required.** After every resize to ≤ 1024px wide, the next command is `--raw reload`.
 - **TEST URL → ONLY from user-confirmed retest URL** (collected in Step 2 below). Do not substitute URLs from `description`, comments or attachments. Once on the env, in-site navigation via clicks is fine.
-- **MISSING ELEMENT → reload ONCE, then bug.** Exactly one `--raw reload` after cookie/auth settles; if still absent → mark ❌ in the comment.
+- **MISSING ELEMENT → reload ONCE, then bug.** Exactly one `--raw reload` after cookie/auth settles; if still absent → mark ❌ in the comment. `qa-check --need` does it (exit 2 = still absent).
 - **CROSS-FEATURE INTERACTION.** Re-use the related-features list from the baseline test plan; do not test in isolation.
 
 ---

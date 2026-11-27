@@ -1,7 +1,7 @@
 {
   "name": "qa-pipeline",
   "description": "A step-by-step QA pipeline of focused skills that turns a Jira issue into manual test documentation and runs it: step1-context -> step2-requirements -> step3-checklist -> step4-test-cases -> step5-execute. Each step reads one markdown artifact and writes the next, so context stays small. ISTQB test design, a choice of coverage level, a smoke gate and a MANUAL status at execution.",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "author": {
     "name": "stokrattt"
   },

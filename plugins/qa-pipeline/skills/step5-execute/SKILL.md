@@ -25,6 +25,7 @@ The plan already lives in `test-cases.md`. Re-deriving it from Jira or from chat
 
 - **`--raw` on every navigation/interaction command:** `goto`, `click`, `fill`, `type`, `press`, `resize`, `mousewheel`, `reload`, `hover`, `check`, `uncheck`, `select`. This strips page status / generated code / snapshot noise from stdout.
 - **Snapshots:** `playwright-cli -s=<sess> --raw snapshot --depth=3 > .playwright-cli/snap.yml && grep -i "keyword" .playwright-cli/snap.yml | head -5`. Never run a bare snapshot; never use `--filename` (use `>` redirect). Only `Read` the file with offset/limit as a last resort.
+- **Every check runs through `qa-check.mjs`, one call per check** (usage and path in `jira-qa-cli` TOKEN RULES). It checks the `--need` elements, runs the actions, reads the state, records the requests the actions sent, and writes `$EV/<id>.txt` with every command. Never write an evidence file yourself.
 - **CSS/role selectors first**: try a role/CSS selector before a snapshot cycle to save commands.
 - **`eval --raw` for read-only extraction only** (e.g. hreflangs, page title). Never for interactions.
 - **Never load `mcp__playwright__*` tools**: they conflict with playwright-cli and waste tokens.
@@ -89,7 +90,7 @@ If smoke passes, execute the **Structural checks** (quick checks) and **each beh
 
 **Statuses:**
 
-- `PASS`: behaved as the expected result says. A value the action changed (a cart total, a status, a counter) is `PASS` only once a reload or the network response shows it: the page can draw it before the server agrees. After the reload, find the page's data request in the network log and read the value only after it has answered, however long that takes; an empty value before that is not a result, and a request that never answers is the finding. Never repeat the action to re-check it: a second submit, payment or order changes the state you are checking.
+- `PASS`: behaved as the expected result says. A value the action changed (a cart total, a status, a counter) is `PASS` only once a reload or the network response shows it: the page can draw it before the server agrees. `qa-check --net` records that response and reloads only when none matched. After the reload, find the page's data request in the network log and read the value only after it has answered, however long that takes; an empty value before that is not a result, and a request that never answers is the finding. Never repeat the action to re-check it: a second submit, payment or order changes the state you are checking.
 - `FAIL`: concrete divergence from the expected result (describe it).
 - `QA`: expected result undefined upstream; needs a human decision.
 - `MANUAL`: the agent cannot reliably verify this in the browser (subtle visual/pixel layout, real payments, external integrations, anything needing human judgment). Do NOT guess PASS/FAIL: list it for a human with the steps and what to check.

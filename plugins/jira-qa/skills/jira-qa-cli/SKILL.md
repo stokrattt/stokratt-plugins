@@ -43,6 +43,14 @@ If neither works → install: `npm install -g @playwright/cli@latest`. Use `npx 
 >
 > Only use `Read` with `offset`/`limit` as a last resort if grep returns too little context. Never read the full file.
 
+> **Every check runs through `qa-check.mjs`, one call per check.** It checks the `--need` elements, runs the actions, reads the state, records the requests the actions sent with their responses, and writes `$EV/<id>.txt` with every command it ran. Never write an evidence file yourself and never chain your own `eval` for a verdict. Both reload rules below run inside it: `--need` gets one reload before it calls an element missing (exit 2), and `--net` names the request that carries a server value (balance, status, bonus): no matching response after the action means one reload and a second read.
+>
+> ```bash
+> node <qa-check> -s qa-proj-123 --ev $EV --id d-main-1 --expect "total drops by 10% (AC2)" --do 'fill e12 CODE10' --do 'press Enter' --read "document.querySelector('[data-test-id=total]').textContent" --net cart
+> ```
+>
+> `<qa-check>` is `scripts/qa/qa-check.mjs` when the project has it, otherwise `<skill base directory>/../../scripts/qa-check.mjs`. Add `--shot` for a visual check.
+
 > **CSS/role selectors first.** Try a role or CSS selector before doing a snapshot cycle. Saves 2 commands. On a non-English site, add the site's own wording to the regex:
 >
 > ```bash
@@ -69,7 +77,7 @@ If neither works → install: `npm install -g @playwright/cli@latest`. Use `npx 
 > **Under `qa-orchestrator`** the prompt's `Env URL:` line is the human's answer to that question, so it replaces the Environment field value everywhere in this skill: the skip rules, the first `open`, the comment's `URL:` line and the log.
 > Example: the Environment field points at one staging host while the description links a different staging host: test on the Environment value.
 
-> **MISSING ELEMENT → reload ONCE, then bug.** If an element that should be present (per AC / Steps to Reproduce / Expected Result) is missing on the page, do exactly one `--raw reload` (after cookie/auth has settled) before concluding it is missing. If it is still absent after that one reload → record it as a bug in the comment (mark the scenario ❌, note that a reload did not bring it up). Do not retry repeatedly or chase the element through navigation tricks. The reload is a defense against transient render races, not a workaround: the bug stays a bug.
+> **MISSING ELEMENT → reload ONCE, then bug.** If an element that should be present (per AC / Steps to Reproduce / Expected Result) is missing on the page, do exactly one `--raw reload` (after cookie/auth has settled) before concluding it is missing. `qa-check --need "<locator>"` does this reload itself; its exit 2 means still missing. If it is still absent after that one reload → record it as a bug in the comment (mark the scenario ❌, note that a reload did not bring it up). Do not retry repeatedly or chase the element through navigation tricks. The reload is a defense against transient render races, not a workaround: the bug stays a bug.
 > **"MISSING" NEEDS THE FULL PAGE.** Before that ❌, take a snapshot without `--depth` into `.playwright-cli/full.yml` and `grep -i` the keyword over the whole file, no `head`. Then `grep -iE "dialog|modal|cookie|popup"` it: an overlay of our own (cookie banner, promo popup, modal) that covers the element gets closed and the check runs again. Only an element absent from the full snapshot with nothing on top is missing.
 > **THREE ⛔ IN A ROW → THE ENVIRONMENT IS DOWN.** Three scenarios in a row blocked by a page that does not load, a 5xx or a timeout: stop, write the rest as `⏸ <scenario>: environment unavailable`, and say so in TEST RESULT.
 
@@ -269,7 +277,7 @@ Before opening the browser, analyse all extracted information and build a test p
 3. **Interaction with related features**: list features the change touches (shared state, dependent flows, components reused by the changed area) and pick at least one concrete interaction check per related feature. See the CROSS-FEATURE INTERACTION rule in TOKEN RULES. Run these alongside main scenarios in Step 7.
 4. **Negative scenarios**: invalid input, wrong state, missing required fields, unauthorized access
 5. **Edge cases**: empty fields, max-length input, special characters, rapid clicks, boundary values
-6. **Validations**: form validation messages, error states, loading states
+6. **Validations**: form validation messages, error states, loading states. Check every message both ways: it appears on the invalid value, and it goes away once a valid value is entered the same way (typed again, not only fixed by another control).
 7. **Integrations**: if the feature touches payments, auth, cart, checkout, promo codes, note these
 8. **Localization**: if the site has multiple languages, check if the tested element/text is correctly translated
 
@@ -279,7 +287,7 @@ Bad: "a "Promo code applied" toast appears". Good: "after reload the cart total 
 `applyPromoCode` response has `status: "APPLIED"`".
 
 The same holds for a value the action changed (a cart total, a status, a counter): the page can draw it before
-the server agrees. Mark such a check ✅ only after a reload or a network response shows the value. After the reload,
+the server agrees. Mark such a check ✅ only after a reload or a network response shows the value. `qa-check` with `--net` records the response of the request the action sent and reloads only when none matched; an action that sent no request changed only the page, and the page read is the proof. After a reload,
 find the page's data request in the network log and read the value only after it has answered, however long that
 takes: an empty value before that is not a result, and a request that never answers is the finding. Never repeat the action to re-check it, a second apply or submit changes the state you are checking.
 
@@ -359,7 +367,7 @@ Run the test plan from Step 5. Every check saves its evidence item to `EV` at th
 2. **Bug reproduction**: follow steps exactly. Screenshot only the reproduced/fixed state.
 3. **Negative scenarios**: attempt invalid inputs. Screenshot only if an unexpected result appears.
 4. **Edge cases**: boundary values, empty fields, special characters.
-5. **Validations**: trigger validation errors and confirm messages appear.
+5. **Validations**: trigger validation errors and confirm messages appear, then enter a valid value the same way and confirm they go away.
 6. **JS errors**: after key actions only:
     ```bash
     playwright-cli -s=qa-<issue-key> --raw console error
@@ -381,6 +389,7 @@ The `reload` after `resize` is required: see the mobile/tablet resize rule in TO
 Snapshot + grep for needed elements, repeat key scenarios and bug reproduction from Step 5.
 
 For layout checks, take **one screenshot per scroll position** and inspect visually. Snapshot only if you need a specific ref.
+A layout line that claims more than the picture shows goes through `qa-check` too, so the number is on disk: `--read "document.documentElement.scrollWidth+'/'+innerWidth" --do 'console error' --shot` for "no horizontal scroll" and "no console errors".
 
 ---
 
